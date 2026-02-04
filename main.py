@@ -10,12 +10,21 @@ audit_logs = []
 def index():
     return render_template('index.html')
 
+# Dans main.py
+# Correction dans main.py
 @app.route('/simulate', methods=['POST'])
 def simulate():
     params = request.json
-    t, s, i, r = engine.run(params)
-    return jsonify({'t': t, 's': s, 'i': i, 'r': r, 'formula': engine.formula_code})
-
+    # On récupère les 5 listes renvoyées par le moteur
+    t, s, i, r, rep = engine.run(params) 
+    return jsonify({
+        't': t, 
+        's': s, 
+        'i': i, 
+        'r': r, 
+        'rep': rep, # Transmis au graphique
+        'formula': engine.formula_code
+    })
 @app.route('/llm_update', methods=['POST'])
 def llm_update():
     user_req = request.json['prompt']

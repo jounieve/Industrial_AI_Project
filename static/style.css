@@ -346,3 +346,140 @@ textarea { height: 100px; resize: none; font-size: 0.85rem; }
     font-weight: bold;
     cursor: pointer;
 }
+
+/* Amélioration de la lisibilité du graphique */
+.chart-container {
+    position: relative;
+    min-height: 450px; /* Plus d'espace vertical */
+    padding: 1rem;
+    background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
+}
+
+.kpi-card {
+    transition: all 0.3s ease;
+    border-top: 4px solid transparent;
+}
+
+.kpi-card:hover {
+    transform: translateY(-5px);
+    border-top-color: var(--accent);
+}
+
+:root {
+    --bg-dark: #020617;
+    --sidebar-bg: #0f172a;
+    --card-bg: #1e293b;
+    --accent: #3b82f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+}
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    display: flex;
+    height: 100vh; /* Fixe la hauteur à l'écran */
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 350px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    overflow-y: auto;
+}
+
+.brand-container { font-weight: 800; color: var(--accent); margin-bottom: 1rem; }
+
+/* Dashboard Principal */
+.main-dashboard {
+    flex: 1;
+    display: flex;
+    flex-direction: column; /* Organisation verticale */
+    padding: 1.5rem;
+    gap: 1.5rem;
+    height: 100vh;
+}
+
+/* KPIs */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    height: 120px; /* Hauteur fixe */
+}
+
+.kpi-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    position: relative;
+}
+
+/* Conteneur Graphique - C'est ici qu'on bloque l'overflow */
+.visual-engine {
+    flex: 2; /* Prend plus de place que les autres sections */
+    min-height: 0; /* Important pour flexbox */
+}
+
+.chart-container {
+    background: var(--card-bg);
+    height: 100%;
+    border-radius: 16px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-container h3 { margin: 0 0 1rem 0; font-size: 1rem; color: var(--text-secondary); }
+
+.canvas-wrapper {
+    flex: 1;
+    min-height: 0;
+    position: relative; /* Nécessaire pour Chart.js */
+}
+
+/* Zone d'analyse en bas */
+.insight-area {
+    flex: 1; /* Prend l'espace restant */
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    min-height: 150px;
+}
+
+.insight-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow-y: auto;
+}
+
+#formula-display {
+    background: #000;
+    color: var(--success);
+    padding: 0.8rem;
+    font-size: 0.7rem;
+    border-radius: 6px;
+}
+
+/* Éléments de formulaire */
+.control-card { background: rgba(30, 41, 59, 0.5); padding: 1rem; border-radius: 10px; border: 1px solid var(--border); }
+.card-title { font-size: 0.7rem; color: var(--accent); font-weight: 800; margin-bottom: 0.8rem; }
+input[type="range"] { width: 100%; }
+.styled-number { width: 100%; background: #020617; border: 1px solid var(--border); color: var(--accent); padding: 5px; }
+textarea { width: 100%; background: #020617; border: 1px solid var(--border); color: #fff; border-radius: 8px; margin-top: 5px; }

@@ -5,133 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AeroDyn | Strategic Control Tower</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
     <aside class="sidebar">
         <div class="brand-container">
             <div class="logo-icon"></div>
-            <span>AERODYN <small>STRATEGIC</small></span>
+            <span>AERODYN <small>SYSTEMS</small></span>
         </div>
         
-        <div id="strategy-modal" class="modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>📜 Guide de Pilotage Stratégique</h2>
-                <div class="strategy-grid">
-                    <div class="strategy-item">
-                        <h4>🚀 Offensive IA (β)</h4>
-                        <p>Représente le degré d'autonomie létale. <strong>Impact :</strong> Accélère les signatures de contrats mais dégrade le stock de "Réputation" et augmente les barrières réglementaires.</p>
-                    </div>
-                    <div class="strategy-item">
-                        <h4>⚙️ Infrastructure (γ)</h4>
-                        <p>Capacité de conversion R&D. <strong>Impact :</strong> Détermine la vitesse à laquelle un contrat signé devient un revenu réel. Si l'IA est trop complexe, ce flux ralentit.</p>
-                    </div>
-                    <div class="strategy-item">
-                        <h4>🛡️ Indice de Réputation</h4>
-                        <p>Le capital immatériel d'AeroDyn. <strong>Mécanisme :</strong> Si cet indice tombe sous 50%, un "frein politique" automatique divise l'efficacité commerciale par deux.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <button id="open-help" class="secondary-button">💡 Comprendre les Leviers</button>
+        <button id="open-help" class="secondary-button">GUIDE DE PILOTAGE</button>
 
         <div class="control-panel">
             <div class="control-card">
-                <h4 class="card-title">🚀 OFFENSIVE IA</h4>
+                <h4 class="card-title">ORIENTATION IA & ARMEMENT</h4>
                 <div class="input-group">
-                    <div class="label-with-hint">
-                        <label>Niveau d'Autonomie (β)</label>
-                        <span class="hint">Vitesse de signature vs Risque éthique</span>
-                    </div>
+                    <label>Agressivité Autonomie (β)</label>
                     <input type="range" id="beta" min="0.1" max="1.5" step="0.05" value="0.5">
-                    <div class="range-values"><span>Standard</span><span>Autonome</span></div>
+                    <div class="range-values"><span>Standard</span><span>Offensif</span></div>
                 </div>
-            
-                
                 <div class="input-group">
-                    <div class="label-with-hint">
-                        <label>R&D Intégration (γ)</label>
-                        <span class="hint">Vitesse de mise en service</span>
-                    </div>
+                    <label>Efficience R&D (γ)</label>
                     <input type="range" id="gamma" min="0.01" max="0.5" step="0.01" value="0.1">
                 </div>
             </div>
 
             <div class="control-card">
-                <h4 class="card-title">⚙️ INFRASTRUCTURE</h4>
+                <h4 class="card-title">CAPACITÉ INDUSTRIELLE</h4>
                 <div class="input-group">
-                    <div class="label-with-hint">
-                        <label>Capacité Usine</label>
-                        <span class="hint">Nombre max de systèmes en simultané</span>
-                    </div>
+                    <label>Capacité Usine (Unités/an)</label>
                     <input type="number" id="capacity" value="40" class="styled-number">
                 </div>
-                
                 <div class="input-group">
-                    <div class="label-with-hint">
-                        <label>Taille du Marché (S0)</label>
-                        <span class="hint">Nombre de Ministères cibles</span>
-                    </div>
+                    <label>Potentiel Marché (S0)</label>
                     <input type="number" id="S0" value="100" class="styled-number">
                 </div>
             </div>
 
             <div class="control-card ai-card">
-                <h4 class="card-title">🤖 MODEL FACTORY (IA)</h4>
-                <div class="ai-input-container">
-                    <textarea id="llm-prompt" placeholder="Ex: 'Simule une crise médiatique qui divise la réputation par deux...'"></textarea>
-                    <button id="btn-llm" class="glow-button">RECONFIGURER LE SYSTÈME</button>
-                </div>
+                <h4 class="card-title">MODEL FACTORY (IA)</h4>
+                <p style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 8px;">Reconfigurer les règles du système via GenAI :</p>
+                <textarea id="llm-prompt" placeholder="Ex: Ajoutez une variable pour les sanctions internationales..."></textarea>
+                <button id="btn-llm" class="glow-button">RECONFIGURER LE MODÈLE</button>
             </div>
         </div>
     </aside>
 
     <main class="main-dashboard">
-        <header class="top-bar">
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <span class="label">Pénétration Marché</span>
-                    <div class="value" id="kpi-success">0%</div>
-                    <div class="trend" id="trend-market">--</div>
-                </div>
-                <div class="kpi-card">
-                    <span class="label">Risque Réglementaire</span>
-                    <div class="value" id="kpi-risk">Bas</div>
+        
+        <header class="kpi-grid">
+            <div class="kpi-card">
+                <span class="label">Pénétration Marché</span>
+                <div class="value" id="kpi-success">0%</div>
+            </div>
+            <div class="kpi-card">
+                <span class="label">Risque Réglementaire</span>
+                <div class="value-container">
+                    <div class="value" id="kpi-risk">Stable</div>
                     <div class="status-dot" id="risk-dot"></div>
                 </div>
-                <div class="kpi-card">
-                    <span class="label">Efficacité Opérationnelle</span>
-                    <div class="value" id="kpi-peak">0.0</div>
-                </div>
+            </div>
+            <div class="kpi-card">
+                <span class="label">Charge Industrielle (Pic)</span>
+                <div class="value" id="kpi-peak">0.0</div>
             </div>
         </header>
 
         <section class="visual-engine">
             <div class="chart-container">
                 <div class="chart-header">
-                    <h3>Projection Dynamique (Horizon 10 ans)</h3>
-                    <div class="chart-legend" id="custom-legend"></div>
+                    <h3>Simulation de Trajectoire Stratégique (Horizon 10 ans)</h3>
                 </div>
-                <canvas id="mainChart"></canvas>
+                <div class="canvas-wrapper">
+                    <canvas id="mainChart"></canvas>
+                </div>
             </div>
         </section>
 
         <footer class="insight-area">
-            <div class="insight-card recommendation">
-                <h3><i class="icon"></i> ANALYSE POUR LE CEO</h3>
+            <div class="insight-card">
+                <h4 class="card-title">INSIGHTS DÉCISIONNELS</h4>
                 <div id="dynamic-expl" class="insight-content">
-                    En attente de simulation...
+                    Analyse de la configuration en cours...
                 </div>
             </div>
-            <div class="insight-card logic-preview">
-                <h3>LOGIQUE SYSTÈME ACTUELLE</h3>
-                <pre id="formula-display"><code>// Code du moteur de calcul injecté par l'IA</code></pre>
+            <div class="insight-card">
+                <h4 class="card-title">LOGIQUE SYSTÈME (MOTEUR SD)</h4>
+                <pre id="formula-display"><code>Logic loading...</code></pre>
             </div>
         </footer>
     </main>
+
+    <div id="strategy-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 style="border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                Cadre d'Analyse Décisionnelle : AeroDyn Systems
+            </h2>
+            
+            <div class="strategy-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                <div class="strategy-item" style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px;">
+                    <h3 style="color: var(--accent); font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">I. Levier d'Expansion Commerciale (β)</h3>
+                    <p>Définit le degré d'autonomie des systèmes d'armes. Une valeur élevée maximise l'attractivité pour les Ministères de la Défense mais accélère l'érosion du capital réputationnel.</p>
+                    <p><strong>Impact :</strong> Si la réputation chute sous 50%, un frein politique s'active, réduisant l'efficacité commerciale.</p>
+                </div>
+
+                <div class="strategy-item" style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--success); padding: 20px; border-radius: 4px;">
+                    <h3 style="color: var(--success); font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">II. Efficience de l'Infrastructure (γ)</h3>
+                    <p>Mesure la capacité à convertir les contrats en systèmes opérationnels livrés.</p>
+                    <p><strong>Impact :</strong> Une valeur γ optimisée garantit la vélocité des revenus. Attention au goulot d'étranglement si la charge dépasse la capacité industrielle installée.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="/static/app.js"></script>
 </body>
