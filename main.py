@@ -19,18 +19,17 @@ def simulate():
 @app.route('/llm_update', methods=['POST'])
 def llm_update():
     user_req = request.json['prompt']
-    # Simulation de la réponse LLM (on modifie une partie du code source)
     current_code = engine.formula_code
-    new_code = current_code.replace("gamma_eff = params['gamma']", "gamma_eff = params['gamma'] * 1.2 # Boosté par IA")
     
-    engine.update_logic(new_code)
-    log = {
-        "time": datetime.datetime.now().strftime("%H:%M:%S"),
-        "request": user_req,
-        "change": "Optimisation du flux gamma_eff injectée."
-    }
-    audit_logs.append(log)
-    return jsonify({"status": "success", "log": log})
-
+    # Simulation de la logique de transformation (en prod, appeler l'API OpenAI/Gemini ici)
+    # Ici on simule une modification de règle métier demandée par le CEO
+    new_code = current_code.replace("0.05 * (100 - Rep)", "0.15 * (100 - Rep) # Boosté par IA")
+    
+    success = engine.update_logic(new_code)
+    
+    if success:
+        return jsonify({"status": "success", "new_code": engine.formula_code})
+    else:
+        return jsonify({"status": "error", "message": "Échec de la reconfiguration"})
 if __name__ == '__main__':
     app.run(debug=True)
