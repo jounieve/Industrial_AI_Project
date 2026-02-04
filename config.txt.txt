@@ -1,0 +1,27 @@
+# ==========================================
+# CONFIGURATION STRATÉGIQUE - ERODYN
+# ==========================================
+
+# MARCHÉ CIBLE
+# Nombre total de Ministères de la Défense à conquérir
+Taille_du_Marche = 100
+
+# FORCE COMMERCIALE (de 0.1 à 1.0)
+# 0.1 = Ventes lentes | 1.0 = Offensive commerciale agressive
+Agressivite_Commerciale = 0.5
+
+# CLIMAT POLITIQUE (de 0.0 à 1.0)
+# 0.0 = Soutien total | 1.0 = Blocage éthique et réglementaire complet
+Pression_Ethique_et_Politique = 0.2
+
+# CAPACITÉ INDUSTRIELLE
+# Combien de systèmes l'usine peut-elle livrer/installer simultanément ?
+Nombre_de_Livraisons_Max = 40
+
+# EFFICACITÉ TECHNIQUE (de 0.01 à 0.5)
+# Vitesse à laquelle un système passe de "en test" à "opérationnel"
+Vitesse_Integration_Technique = 0.1
+
+# HORIZON TEMPOREL
+# Nombre de trimestres à simuler
+Duree_de_la_Simulation = 160
