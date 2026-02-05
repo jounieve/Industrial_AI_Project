@@ -1,0 +1,6 @@
+Flask
+numpy
+scipy
+ollama
+pandas
+requests

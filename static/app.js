@@ -1,14 +1,14 @@
 /**
  * @file app.js
  * @description Moteur de rendu dynamique pour le Strategic Control Tower AeroDyn.
- * Optimisé pour la fluidité des transitions et l'analyse décisionnelle.
  */
 
 let mainChart;
+let activeVariables = ['S', 'I', 'R', 'Rep'];
+let colorAssignments = {}; // Persistent color mapping
 
 /**
  * Initialisation unique du graphique Chart.js
- * Configure l'esthétique et les options de performance.
  */
 function initChart() {
     const ctx = document.getElementById('mainChart').getContext('2d');
@@ -17,41 +17,13 @@ function initChart() {
         type: 'line',
         data: {
             labels: [],
-            datasets: [
-                { 
-                    label: 'REVENUS (OPÉRATIONNEL)', 
-                    data: [], 
-                    borderColor: '#10b981', 
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    fill: true,
-                    borderWidth: 3,
-                    tension: 0.4,
-                    pointRadius: 0
-                },
-                { 
-                    label: 'RÉPUTATION STRATÉGIQUE', 
-                    data: [], 
-                    borderColor: '#f59e0b', 
-                    borderDash: [5, 5],
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 0
-                },
-                {
-                    label: 'ZONE D\'ALERTE ÉTHIQUE',
-                    data: [],
-                    borderColor: '#ef4444',
-                    borderWidth: 4,
-                    pointRadius: 0,
-                    fill: false
-                }
-            ]
+            datasets: []
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false, // Force le graphique à s'adapter au rectangle
+            maintainAspectRatio: false,
             animation: {
-                duration: 400, // Fluidité du mouvement
+                duration: 400,
                 easing: 'easeInOutQuart'
             },
             interaction: {
@@ -90,15 +62,167 @@ function initChart() {
 }
 
 /**
+ * Get or assign persistent color for a variable
+ */
+function getColorForVariable(key) {
+    const colorPalette = [
+        '#10b981', // Green (R)
+        '#f59e0b', // Orange (Rep)
+        '#94a3b8', // Gray (S)
+        '#ef4444', // Red (I)
+        '#3b82f6', // Blue
+        '#8b5cf6', // Purple
+        '#ec4899', // Pink
+        '#06b6d4', // Cyan
+        '#f97316', // Dark Orange
+        '#14b8a6', // Teal
+        '#a855f7', // Violet
+        '#f43f5e', // Rose
+        '#0ea5e9', // Sky Blue
+        '#84cc16', // Lime
+        '#eab308', // Yellow
+        '#6366f1', // Indigo
+        '#22c55e', // Emerald
+        '#fb923c', // Light Orange
+        '#c026d3', // Fuchsia
+        '#0891b2'  // Dark Cyan
+    ];
+    
+    // Fixed base variable colors
+    const baseColors = {
+        'r': { color: '#10b981', fill: true },
+        'rep': { color: '#f59e0b', fill: false },
+        's': { color: '#94a3b8', fill: false },
+        'i': { color: '#ef4444', fill: false }
+    };
+    
+    const normalizedKey = key.toLowerCase();
+    
+    if (baseColors[normalizedKey]) {
+        return baseColors[normalizedKey];
+    }
+    
+    // Check if variable already has a color assigned
+    if (colorAssignments[normalizedKey]) {
+        return { color: colorAssignments[normalizedKey], fill: false };
+    }
+    
+    // Assign new color from palette (skip first 4 reserved for base vars)
+    const usedColors = Object.values(colorAssignments);
+    const availableColors = colorPalette.slice(4).filter(c => !usedColors.includes(c));
+    
+    const newColor = availableColors.length > 0 ? availableColors[0] : colorPalette[4];
+    colorAssignments[normalizedKey] = newColor;
+    
+    return { color: newColor, fill: false };
+}
+
+/**
+ * Clean variable name (remove 'dt' suffix if present)
+ */
+function cleanVariableName(key) {
+    // Remove common derivative suffixes
+    let cleaned = key.replace(/dt$/i, '').replace(/^d/, '').replace(/_dt$/i, '');
+    // Remove 'new' prefix if present
+    cleaned = cleaned.replace(/^new/i, '');
+    return cleaned || key; // Fallback to original if cleaning results in empty string
+}
+
+/**
+ * Update the variable chips display with remove buttons
+ */
+function updateVariableChips(variables) {
+    const container = document.getElementById('variable-chips');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const baseVariables = ['S', 'I', 'R', 'Rep'];
+    
+    variables.forEach(varName => {
+        const cleanName = cleanVariableName(varName);
+        const chip = document.createElement('div');
+        chip.className = 'variable-chip';
+        chip.style.borderColor = getColorForVariable(varName).color + '80'; // 50% opacity
+        
+        chip.innerHTML = `
+            <span class="var-name">${cleanName.toUpperCase()}</span>
+            ${!baseVariables.includes(varName) ? 
+                `<button class="remove-var-btn" onclick="removeVariable('${varName}')" title="Supprimer cette variable">×</button>` 
+                : ''}
+        `;
+        container.appendChild(chip);
+    });
+}
+
+/**
+ * Remove a variable via API
+ */
+async function removeVariable(varName) {
+    const cleanName = cleanVariableName(varName);
+    
+    if (!confirm(`Voulez-vous vraiment supprimer la variable "${cleanName.toUpperCase()}" ?`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('btn-llm');
+    btn.innerText = "SUPPRESSION...";
+    btn.disabled = true;
+    
+    try {
+        const res = await fetch('/llm_update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ prompt: `supprime la variable ${cleanName}` })
+        });
+        const result = await res.json();
+        
+        if (result.status === "success") {
+            // Remove color assignment
+            delete colorAssignments[varName.toLowerCase()];
+            delete colorAssignments[cleanName.toLowerCase()];
+            
+            btn.innerText = "VARIABLE SUPPRIMÉE";
+            btn.style.background = "#10b981";
+            
+            setTimeout(() => { 
+                btn.innerText = "RECONFIGURER LE SYSTÈME"; 
+                btn.style.background = "#3b82f6";
+                btn.disabled = false;
+            }, 2000);
+            
+            update();
+        } else {
+            btn.innerText = "ÉCHEC SUPPRESSION";
+            btn.style.background = "#ef4444";
+            alert("Erreur: " + result.message);
+            
+            setTimeout(() => { 
+                btn.innerText = "RECONFIGURER LE SYSTÈME"; 
+                btn.style.background = "#3b82f6";
+                btn.disabled = false;
+            }, 3000);
+        }
+    } catch (e) {
+        btn.innerText = "ERREUR RÉSEAU";
+        btn.style.background = "#ef4444";
+        console.error(e);
+        setTimeout(() => { 
+            btn.innerText = "RECONFIGURER LE SYSTÈME"; 
+            btn.style.background = "#3b82f6";
+            btn.disabled = false; 
+        }, 2000);
+    }
+}
+
+/**
  * Fonction principale de mise à jour des simulations
- * Appelé à chaque modification des leviers par le CEO.
  */
 async function update() {
-    // Collecte des paramètres depuis l'interface
     const params = {
         S0: parseInt(document.getElementById('S0').value) || 100,
         beta: parseFloat(document.getElementById('beta').value),
-        sigma: 0.2, // Pression politique structurelle
+        sigma: 0.2,
         capacity: parseInt(document.getElementById('capacity').value),
         gamma: parseFloat(document.getElementById('gamma').value),
         t_max: 160
@@ -112,32 +236,54 @@ async function update() {
         });
         
         const data = await res.json();
-
-        // Initialisation si premier passage
         if (!mainChart) initChart();
 
-        // Mise à jour fluide des datasets sans destruction d'objet
+        const dataKeys = Object.keys(data).filter(key => key !== 't' && key !== 'formula');
+        
+        // Update variable chips
+        activeVariables = dataKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1));
+        updateVariableChips(activeVariables);
+
+        // Base labels only
+        const baseLabelMap = {
+            'r': 'REVENUS',
+            'rep': 'RÉPUTATION',
+            's': 'MARCHÉ',
+            'i': 'OPÉRATIONS'
+        };
+
+        const newDatasets = dataKeys.map((key) => {
+            const colorInfo = getColorForVariable(key);
+            const cleanName = cleanVariableName(key);
+            const label = baseLabelMap[key.toLowerCase()] || cleanName.toUpperCase();
+            
+            return {
+                label: label,
+                data: data[key],
+                borderColor: colorInfo.color,
+                backgroundColor: colorInfo.color + '1A',
+                fill: colorInfo.fill,
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 0
+            };
+        });
+
         mainChart.data.labels = data.t.map(v => `T${Math.floor(v/4)}`);
-        mainChart.data.datasets[0].data = data.r; // Courbe des Revenus
-        mainChart.data.datasets[1].data = data.rep; // Courbe de Réputation
-        mainChart.data.datasets[2].data = data.rep.map(v => v < 50 ? v : null); // Surbrillance Alerte
+        mainChart.data.datasets = newDatasets;
+        mainChart.update('none');
 
-        mainChart.update('none'); // Utilisation de 'none' pour une réactivité instantanée des curseurs
-
-        // Mise à jour des indicateurs de performance et d'analyse
         updateKPIs(data, params);
         updateCEOAnalysis(data, params);
-        
-        // Affichage de la logique mathématique pour transparence
         document.getElementById('formula-display').textContent = data.formula;
         
     } catch (error) {
-        console.error("Erreur lors de la simulation stratégique:", error);
+        console.error("Strategic Simulation Error:", error);
     }
 }
 
 /**
- * Mise à jour des indicateurs clés (KPIs) en temps réel
+ * Mise à jour des indicateurs clés (KPIs)
  */
 function updateKPIs(data, params) {
     const finalSuccess = data.r[data.r.length - 1];
@@ -150,7 +296,6 @@ function updateKPIs(data, params) {
     const riskElement = document.getElementById('kpi-risk');
     const riskDot = document.getElementById('risk-dot');
     
-    // Logique de seuils de risque
     if (finalRep < 45 || peakLoad > params.capacity * 1.2) {
         riskElement.innerText = "CRITIQUE";
         riskElement.style.color = "#ef4444";
@@ -171,33 +316,55 @@ function updateKPIs(data, params) {
  */
 function updateCEOAnalysis(data, p) {
     const expl = document.getElementById('dynamic-expl');
-    const lowRep = data.rep.some(v => v < 50);
-    const saturation = Math.max(...data.i) > p.capacity;
+    const lastR = data.r[data.r.length - 1];
+    const maxI = Math.max(...data.i);
+    const repTrend = data.rep[50] - data.rep[0];
 
-    let analysis = "";
-    if (lowRep) {
-        analysis = `<p class="warning"><strong>ALERTE RÉPUTATION :</strong> L'agressivité actuelle (β=${p.beta}) sature les mécanismes d'acceptabilité. Un frein réglementaire automatique réduit votre efficacité commerciale.</p>`;
-    } else {
-        analysis = `<p class="success"><strong>CONTRÔLE OPÉRATIONNEL :</strong> La trajectoire est conforme aux objectifs. Le capital réputationnel permet de maintenir une croissance stable.</p>`;
+    let analysis = "<strong>Rapport de Situation :</strong><br>";
+
+    if (repTrend < -20) {
+        analysis += `<p class="danger"><strong>DÉGRADATION RAPIDE :</strong> Votre image s'effondre.</p>`;
+    } else if (lastR > 90) {
+        analysis += `<p class="success"><strong>MONOPOLE :</strong> Marché capturé à ${lastR.toFixed(1)}%.</p>`;
     }
-    
-    if (saturation) {
-        analysis += `<p style="color: #f59e0b;"><strong>NOTE :</strong> Goulot d'étranglement détecté. La capacité usine limite la conversion des contrats en revenus.</p>`;
+    if (maxI > p.capacity) {
+        analysis += `<p class="warning"><strong>SATURATION :</strong> Goulot détecté (Pic: ${maxI.toFixed(1)}).</p>`;
     }
+
+    const coreKeys = ['t', 'formula', 's', 'i', 'r', 'rep'];
+    Object.keys(data).forEach(key => {
+        if (!coreKeys.includes(key)) {
+            const values = data[key];
+            const startVal = values[0];
+            const endVal = values[values.length - 1];
+            const trend = endVal - startVal;
+            const cleanName = cleanVariableName(key);
+
+            if (trend > 10) {
+                analysis += `<p style="color:var(--accent)"><strong>NODE DYNAMIQUE :</strong> '${cleanName.toUpperCase()}' en forte croissance (+${trend.toFixed(1)}).</p>`;
+            } else if (trend < -10) {
+                analysis += `<p style="color:var(--danger)"><strong>NODE DYNAMIQUE :</strong> Déplétion critique de '${cleanName.toUpperCase()}'.</p>`;
+            } else {
+                analysis += `<p style="color:var(--text-secondary)"><strong>NODE DYNAMIQUE :</strong> '${cleanName.toUpperCase()}' stabilisée.</p>`;
+            }
+        }
+    });
 
     expl.innerHTML = analysis;
 }
 
 /**
- * Gestion de la reconfiguration via IA (Model Factory)
+ * Gestion de la reconfiguration via IA
  */
 document.getElementById('btn-llm').onclick = async () => {
-    const prompt = document.getElementById('llm-prompt').value;
+    const promptInput = document.getElementById('llm-prompt');
+    const prompt = promptInput.value;
     const btn = document.getElementById('btn-llm');
     
     if(!prompt) return;
 
     btn.innerText = "RECONFIGURATION...";
+    btn.disabled = true;
     
     try {
         const res = await fetch('/llm_update', {
@@ -210,20 +377,40 @@ document.getElementById('btn-llm').onclick = async () => {
         if (result.status === "success") {
             btn.innerText = "SYSTÈME MIS À JOUR";
             btn.style.background = "#10b981";
+            promptInput.value = "";
+            
             setTimeout(() => { 
                 btn.innerText = "RECONFIGURER LE SYSTÈME"; 
                 btn.style.background = "#3b82f6";
+                btn.disabled = false;
             }, 2000);
+            
             update();
+        } else {
+            btn.innerText = "STABILISATION ÉCHOUÉE";
+            btn.style.background = "#ef4444";
+            alert("Erreur Model Factory : " + result.message);
+            
+            setTimeout(() => { 
+                btn.innerText = "RECONFIGURER LE SYSTÈME"; 
+                btn.style.background = "#3b82f6";
+                btn.disabled = false;
+            }, 3000);
         }
     } catch (e) {
-        btn.innerText = "ERREUR SYSTÈME";
+        btn.innerText = "ERREUR RÉSEAU";
+        btn.style.background = "#ef4444";
         console.error(e);
+        setTimeout(() => { 
+            btn.innerText = "RECONFIGURER LE SYSTÈME"; 
+            btn.style.background = "#3b82f6";
+            btn.disabled = false; 
+        }, 2000);
     }
 };
 
 /**
- * Gestion de la modale "Guide de Pilotage"
+ * Gestion de la modale
  */
 const modal = document.getElementById("strategy-modal");
 const openBtn = document.getElementById("open-help");
@@ -231,14 +418,12 @@ const closeSpan = document.getElementsByClassName("close-modal")[0];
 
 if (openBtn) openBtn.onclick = () => modal.style.display = "block";
 if (closeSpan) closeSpan.onclick = () => modal.style.display = "none";
-window.onclick = (event) => { if (event == modal) modal.style.display = "none"; }
+window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
 
-// Écouteurs d'événements sur les entrées (Inputs)
 document.querySelectorAll('input').forEach(input => {
     input.addEventListener('input', update);
 });
 
-// Initialisation au chargement de la page
 window.onload = () => {
     initChart();
     update();

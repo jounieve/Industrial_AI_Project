@@ -45,8 +45,13 @@
             </div>
 
             <div class="control-card ai-card">
-                <h4 class="card-title">MODEL FACTORY (IA)</h4>
-                <p style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 8px;">Reconfigurer les règles du système via GenAI :</p>
+                <h4 class="card-title">
+                    MODEL FACTORY (IA) 
+                    <span class="tooltip-icon" title="Interface de reconfiguration neuronale permettant de modifier les équations différentielles du moteur en temps réel."> [?]</span>
+                </h4>
+                <p style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 8px;">
+                    <b>Idées à tester :</b> 'Ajoute Sanctions', 'Supprime Lobbying' ou 'Reset'
+                </p>
                 <textarea id="llm-prompt" placeholder="Ex: Ajoutez une variable pour les sanctions internationales..."></textarea>
                 <button id="btn-llm" class="glow-button">RECONFIGURER LE MODÈLE</button>
             </div>
@@ -57,18 +62,27 @@
         
         <header class="kpi-grid">
             <div class="kpi-card">
-                <span class="label">Pénétration Marché</span>
+                <span class="label">
+                    Pénétration Marché 
+                    <span class="tooltip-icon" title="Pourcentage total de prospects (S) convertis en revenus opérationnels (R) en fin de période."> [?]</span>
+                </span>
                 <div class="value" id="kpi-success">0%</div>
             </div>
             <div class="kpi-card">
-                <span class="label">Risque Réglementaire</span>
+                <span class="label">
+                    Risque Réglementaire 
+                    <span class="tooltip-icon" title="Évaluation basée sur le capital de Réputation. Un risque 'Critique' active des freins automatiques."> [?]</span>
+                </span>
                 <div class="value-container">
                     <div class="value" id="kpi-risk">Stable</div>
                     <div class="status-dot" id="risk-dot"></div>
                 </div>
             </div>
             <div class="kpi-card">
-                <span class="label">Charge Industrielle (Pic)</span>
+                <span class="label">
+                    Charge Industrielle (Pic) 
+                    <span class="tooltip-icon" title="Le pic de travail simultané en phase d'intégration (I). Ne doit pas dépasser la Capacité Usine."> [?]</span>
+                </span>
                 <div class="value" id="kpi-peak">0.0</div>
             </div>
         </header>
@@ -83,16 +97,27 @@
                 </div>
             </div>
         </section>
+        
+        <section class="variable-section">
+            <h4 style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 8px;">VARIABLES ACTIVES</h4>
+            <div id="variable-chips"></div>
+        </section>
 
         <footer class="insight-area">
             <div class="insight-card">
-                <h4 class="card-title">INSIGHTS DÉCISIONNELS</h4>
+                <h4 class="card-title">
+                    INSIGHTS DÉCISIONNELS 
+                    <span class="tooltip-icon" title="Analyse algorithmique des courbes pour détecter les goulots d'étranglement et les dérives."> [?]</span>
+                </h4>
                 <div id="dynamic-expl" class="insight-content">
                     Analyse de la configuration en cours...
                 </div>
             </div>
             <div class="insight-card">
-                <h4 class="card-title">LOGIQUE SYSTÈME (MOTEUR SD)</h4>
+                <h4 class="card-title">
+                    LOGIQUE SYSTÈME (MOTEUR SD) 
+                    <span class="tooltip-icon" title="Visualisation en temps réel du code Python compilé par l'IA pour calculer les trajectoires."> [?]</span>
+                </h4>
                 <pre id="formula-display"><code>Logic loading...</code></pre>
             </div>
         </footer>
@@ -104,18 +129,14 @@
             <h2 style="border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">
                 Cadre d'Analyse Décisionnelle : AeroDyn Systems
             </h2>
-            
-            <div class="strategy-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                <div class="strategy-item" style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--accent); padding: 20px; border-radius: 4px;">
-                    <h3 style="color: var(--accent); font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">I. Levier d'Expansion Commerciale (β)</h3>
-                    <p>Définit le degré d'autonomie des systèmes d'armes. Une valeur élevée maximise l'attractivité pour les Ministères de la Défense mais accélère l'érosion du capital réputationnel.</p>
-                    <p><strong>Impact :</strong> Si la réputation chute sous 50%, un frein politique s'active, réduisant l'efficacité commerciale.</p>
+            <div class="strategy-grid">
+                <div class="strategy-item">
+                    <h3>I. Levier d'Expansion Commerciale (β)</h3>
+                    <p>Définit le degré d'autonomie des systèmes d'armes. Une valeur élevée maximise l'attractivité mais réduit la réputation.</p>
                 </div>
-
-                <div class="strategy-item" style="background: rgba(15, 23, 42, 0.8); border-left: 4px solid var(--success); padding: 20px; border-radius: 4px;">
-                    <h3 style="color: var(--success); font-size: 0.85rem; margin-bottom: 10px; text-transform: uppercase;">II. Efficience de l'Infrastructure (γ)</h3>
-                    <p>Mesure la capacité à convertir les contrats en systèmes opérationnels livrés.</p>
-                    <p><strong>Impact :</strong> Une valeur γ optimisée garantit la vélocité des revenus. Attention au goulot d'étranglement si la charge dépasse la capacité industrielle installée.</p>
+                <div class="strategy-item">
+                    <h3>II. Efficience de l'Infrastructure (γ)</h3>
+                    <p>Capacité à convertir les contrats en systèmes opérationnels.</p>
                 </div>
             </div>
         </div>

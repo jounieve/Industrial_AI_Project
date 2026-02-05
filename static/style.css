@@ -190,6 +190,7 @@ textarea { height: 100px; resize: none; font-size: 0.85rem; }
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    overflow-y: auto;
 }
 
 /* Titres de sections */
@@ -410,6 +411,7 @@ body {
     padding: 1.5rem;
     gap: 1.5rem;
     height: 100vh;
+    overflow-y: auto;
 }
 
 /* KPIs */
@@ -477,6 +479,73 @@ body {
     border-radius: 6px;
 }
 
+.tooltip-icon {
+    cursor: help;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.tooltip-icon:hover {
+    opacity: 1;
+    text-shadow: 0 0 8px var(--accent);
+}
+#variable-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+    padding: 12px;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 8px;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+}
+
+.variable-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3b82f6;
+    transition: all 0.2s;
+}
+
+.variable-chip:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.var-name {
+    letter-spacing: 0.5px;
+}
+
+.remove-var-btn {
+    background: rgba(239, 68, 68, 0.8);
+    border: none;
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.remove-var-btn:hover {
+    background: rgba(239, 68, 68, 1);
+    transform: scale(1.1);
+}
 /* Éléments de formulaire */
 .control-card { background: rgba(30, 41, 59, 0.5); padding: 1rem; border-radius: 10px; border: 1px solid var(--border); }
 .card-title { font-size: 0.7rem; color: var(--accent); font-weight: 800; margin-bottom: 0.8rem; }

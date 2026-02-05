@@ -3,45 +3,115 @@
 **Aide à la décision pour l'intégration de l'IA dans les systèmes de défense.**
 
 ## 1. Vision Stratégique
-
-L'interface AeroDyn n'est pas qu'un simple tableau de bord de données ; c'est une **"Model Factory"** conçue pour explorer les conséquences systémiques de l'IA létale sur un horizon de 10 ans. Elle permet de simuler l'équilibre précaire entre l'agressivité technologique, la capacité industrielle et l'acceptabilité politique.
-
-## 2. Le Processus de Modélisation
-
-Le processus repose sur quatre piliers garantissant la répétabilité et la transparence du modèle :
-
-1. **Extraction de la Connaissance** : Identification des variables critiques (Vitesse de signature, Taux d'intégration, Indice de Réputation) à partir des rapports de marché et des contraintes réglementaires.
-2. **Encodage des Mécanismes** : Traduction des relations de cause à effet en équations différentielles couplées (Modèle S-I-R étendu).
-3. **Simulation Dynamique** : Calcul en temps réel des trajectoires via un moteur de calcul Python (`scipy.integrate.odeint`).
-4. **Interface Décisionnelle** : Visualisation fluide pour permettre au CEO de tester des scénarios "What-if" sans friction technique.
-
-## 3. Logique du Moteur (Moteur SD)
-
-Le système est régi par une logique de flux et de stocks :
-
-* **Le Marché ()** : Représente les Ministères de la Défense cibles.
-* **L'Intégration ()** : Phase critique où les contrats signés deviennent des projets actifs. Ce stock est limité par la **Capacité Usine**.
-* **Les Revenus ()** : Systèmes matures et opérationnels générant du chiffre d'affaires.
-* **La Réputation ()** : Capital immatériel qui s'érode avec l'autonomie de l'IA () et se régénère par les garde-fous éthiques.
-
-### Les deux règles d'or du système :
-
-1. **Le Frein Politique** : Si la Réputation tombe sous **50%**, un mécanisme de blocage réglementaire s'active, divisant par deux l'efficacité commerciale.
-2. **Le Goulot d'Étranglement** : Si le nombre de projets en cours () dépasse la capacité industrielle, la vitesse de livraison () ralentit mécaniquement.
-
-## 4. La "Model Factory" & IA Générative
-
-L'innovation majeure réside dans la capacité de reconfiguration. Via le panneau **Model Factory**, un décideur peut modifier la logique mathématique du système en langage naturel.
-
-* **Exemple** : *"Simule un embargo international qui réduit les exportations de 30% après 5 ans"*.
-L'IA générative réécrit alors le code du moteur (`engine.py`) pour intégrer cette nouvelle réalité, rendant le modèle vivant et adaptable aux crises futures.
-
-## 5. Guide d'Utilisation pour le CEO
-
-* **Scénario de Saturation** : Augmentez l'Agressivité () et baissez la Capacité. Observez l'accumulation des stocks en attente et la chute des revenus.
-* **Scénario d'Éthique** : Maintenez  bas pour observer une croissance plus lente mais une Réputation stable garantissant un accès au marché à long terme.
-* **KPIs en Temps Réel** : Surveillez le **Risque Réglementaire**. S'il passe au rouge, votre stratégie actuelle n'est pas soutenable au-delà de 24 mois.
+L'interface **AeroDyn** est une **"Model Factory"** conçue pour explorer les conséquences systémiques de l'IA sur un horizon de 10 ans.  
+Elle permet de simuler l'équilibre entre l'agressivité technologique, la capacité industrielle et l'acceptabilité politique via des équations différentielles gérées par IA.
 
 ---
 
-*Ce projet illustre une approche crédible et transparente de la modélisation industrielle, conçue pour transformer l'ambiguïté éthique en insights actionnables.*
+## 2. Installation et Lancement
+
+Pour garantir la stabilité du système, suivez ces étapes de déploiement :
+
+### Prérequis
+- **Python 3.9+**
+- **Ollama** (installé et configuré)
+
+### Procédure de lancement
+
+1. **Création de l'environnement virtuel :**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   ```
+
+2. **Installation des dépendances :**
+   ```bash
+   pip install flask numpy scipy ollama
+   ```
+
+3. **Configuration du moteur d'IA (LLM) :**
+   - Modèle recommandé (précision logique maximale) :
+     ```bash
+     ollama pull qwen2.5-coder:7b
+     ```
+   - Alternatives légères (optimisées pour moins de RAM) :
+     ```bash
+     #Perforamnces moindres / Erreurs systématiques 
+     ollama pull dolphin-phi
+     ollama pull llama3.2:latest 
+     ```
+
+4. **Exécution du serveur :**
+   ```bash
+   python main.py
+   ```
+
+5. **Accès à l'interface :**
+   Ouvrez votre navigateur sur **[http://127.0.0.1:5000](http://127.0.0.1:5000)**
+
+---
+
+## 3. Architecture de l'Interface
+
+Le tableau de bord est structuré pour un pilotage décisionnel fluide et modulaire :
+
+### A. Contrôle Opérationnel *(Sidebar)*
+- **Orientation IA (β)** : Ajuste l'agressivité commerciale (autonomie de l'IA).  
+- **Capacité Usine** : Définit le plafond industriel pour éviter les goulots d'étranglement.  
+- **Model Factory (IA)** : Reconfigure en temps réel la logique mathématique du moteur via GenAI.
+
+### B. Visualisation Dynamique *(Centre)*
+- **Graphique Temps Réel** : Visualise les stocks (Marché, Opérations, Revenus, Réputation).  
+- **KPIs Flash** : Indicateurs de Pénétration Marché, Risque Réglementaire (basé sur la Réputation) et Pic de Charge.
+
+### C. Intelligence Système *(Bas)*
+- **Insights Décisionnels** : Analyse automatique des tendances et détection des nouveaux *nodes*.  
+- **Logique Système (Moteur SD)** : Affiche le code Python `deriv()` compilé dynamiquement par l'IA.
+
+---
+
+## 4. Logique du Moteur (Moteur SD)
+
+Le système repose sur un modèle de **dynamique des systèmes** inspiré du schéma S-I-R étendu :
+
+- **Marché (S)** : Clients potentiels (Ministères de la Défense).  
+- **Intégration (I)** : Phase opérationnelle limitée par la Capacité Usine.  
+- **Revenus (R)** : Capital généré par les systèmes déployés.  
+- **Réputation (Rep)** : Capital immatériel régulant l’accès au marché.
+
+---
+
+## 5. Scénarios de Test (Démonstration)
+
+Utilisez ces *prompts* dans le panneau **Model Factory** pour tester la résilience du modèle :
+
+### Scénario 1 : La Stratégie d'Influence *(Lobbying)*
+**Prompt :**  
+> "Ajoute une variable 'Lobbying' alimentée par 10% des revenus, avec une dépréciation de 5% et une fonction de saturation pour réduire le frein politique."
+
+**Objectif :**  
+Montrer comment une nouvelle variable stabilise la croissance malgré une faible réputation.
+
+---
+
+### Scénario 2 : La Crise Diplomatique *(Sanctions)*
+**Prompt :**  
+> "Simule des sanctions : ajoute une variable 'Sanctions' s'activant si la Réputation < 40, réduisant la capacité usine de 50%."
+
+**Objectif :**  
+Observer la chute brutale des revenus et l’alerte automatique dans les *Insights Décisionnels*.
+
+---
+
+### Scénario 3 : Sécurité et Réinitialisation *(Reset)*
+**Prompt :**  
+> "Reset au modèle de base."
+
+**Objectif :**  
+Démontrer le mécanisme de **Hard Reset** qui purge instantanément les modifications de l’IA pour restaurer la baseline d’origine.
+
+---
+
+## 6. Synthèse
+
+AeroDyn transforme l’ambiguïté stratégique en **insights actionnables**,  offrant un **jumeau numérique vivant** pour la simulation et la prise de décision stratégique.
