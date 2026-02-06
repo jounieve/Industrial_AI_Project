@@ -349,7 +349,6 @@ def llm_update():
                         lines[idx] = re.sub(rf"y_dict\.get\('{var}'(?:,\s*0)?\)", var, line)
                 code_block = '\n'.join(lines)
             
-            # FIX 4: Fix positivity guards
             for var in new_vars:
                 # Find derivative with wrong guard variable
                 deriv_pattern = rf"(d{var}dt\s*=\s*max\(\s*-)(\w+)(\s*,)"

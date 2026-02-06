@@ -26,7 +26,7 @@ Pour garantir la stabilité du système, suivez ces étapes de déploiement :
 
 2. **Installation des dépendances :**
    ```bash
-   pip install flask numpy scipy ollama
+   pip install -r requirements.txt
    ```
 
 3. **Configuration du moteur d'IA (LLM) :**
