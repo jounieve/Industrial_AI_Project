@@ -17,10 +17,18 @@ def simulate():
     results = engine.run(params) 
     return jsonify(results)
 
+
+
+
 @app.route('/llm_update', methods=['POST'])
 def llm_update():
     user_req = request.json.get('prompt', '').lower()
-    print(f"\n[STRATEGIC LOG] User Request: {user_req}")
+    
+    # --- DÉTECTION DÉMO FIXE LOBBYING ---
+    if "lobbying" in user_req and "supprime" not in user_req:
+        print("[SYSTEM] Détection mot-clé 'Lobbying' : Activation démo fixe")
+        engine.set_lobbying_scenario()
+        return jsonify({"status": "success", "new_code": engine.formula_code})
     
     # --- FORCE RESET ---
     if any(word in user_req for word in ["reset", "revenir", "initial", "baseline"]):

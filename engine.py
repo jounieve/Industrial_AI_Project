@@ -3,19 +3,25 @@ from scipy.integrate import odeint
 
 class AeroDynEngine:
     def __init__(self):
+        # Dans engine.py, modifiez le bloc baseline_code :
         self.baseline_code = """
 def deriv(y_dict, t, params):
-    # --- État Initial : Modèle de Base AeroDyn ---
     S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)
-    N, beta, gamma = params.get('S0', 100) + 1, params.get('beta', 0.4), params.get('gamma', 0.1)
+    S0 = params.get('S0', 100)
+    capacity = params.get('capacity', 40)
+    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)
+    
+    # --- LOGIQUE DE CAPACITÉ (C'est ce qui fera bouger les courbes !) ---
+    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit
+    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)
     
     reputation_drag = 2.0 if Rep < 50 else 1.0
     sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)
     beta_eff = beta * (1 - sigma_eff)
     
     dSdt = -(beta_eff * S * I) / N
-    dIdt = (beta_eff * S * I) / N - (gamma * I)
-    dRdt = gamma * I
+    dIdt = (beta_eff * S * I) / N - (gamma_eff * I) # Utilise gamma_eff
+    dRdt = gamma_eff * I                          # Utilise gamma_eff
     dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)
     
     return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}
@@ -110,3 +116,50 @@ def deriv(y_dict, t, params):
             print(f"[ENGINE] Removed variable '{var_name}' from state")
             return True
         return False
+    # Dans engine.py, à l'intérieur de la classe AeroDynEngine
+
+    def set_lobbying_scenario(self):
+        """Injecte manuellement le scénario de démonstration Lobbying"""
+        lobbying_code = """
+def deriv(y_dict, t, params):
+    # 1. Extraction des stocks
+    S = y_dict.get('S', 100)
+    I = y_dict.get('I', 1)
+    R = y_dict.get('R', 0)
+    Rep = y_dict.get('Rep', 100)
+    Lobbying = y_dict.get('Lobbying', 0)
+    
+    # 2. Paramètres
+    N = params.get('S0', 100) + 1
+    beta = params.get('beta', 0.4)
+    gamma = params.get('gamma', 0.1)
+    sigma = params.get('sigma', 0.2)
+    
+    # 3. Logique Lobbying (10% des revenus convertis en influence, dépréciation 5%)
+    # On utilise le flux (gamma * I) pour l'entrée du lobbying (Stock-Flow)
+    inflow_lobby = 0.10 * (gamma * I)
+    outflow_lobby = 0.05 * Lobbying
+    dLobbyingdt = max(-Lobbying, inflow_lobby - outflow_lobby)
+    
+    # 4. Effet de saturation sur le frein politique (sigma)
+    # Le lobbying réduit sigma (max 50% de réduction) via une fonction de saturation
+    saturation_effect = Lobbying / (Lobbying + 10) # Courbe de saturation
+    sigma_eff_lobby = sigma * (1 - 0.5 * saturation_effect)
+    
+    # 5. Dynamique de base AeroDyn
+    reputation_drag = 2.0 if Rep < 50 else 1.0
+    sigma_total = min(sigma_eff_lobby * reputation_drag, 0.95)
+    beta_eff = beta * (1 - sigma_total)
+    
+    dSdt = -(beta_eff * S * I) / N
+    dIdt = (beta_eff * S * I) / N - (gamma * I)
+    dRdt = gamma * I
+    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)
+    
+    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'Lobbying': dLobbyingdt}
+"""
+        # Mises à jour internes
+        self.default_state['Lobbying'] = 0.0
+        self.formula_code = lobbying_code
+        self._compile()
+        return True

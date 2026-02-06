@@ -420,9 +420,20 @@ if (openBtn) openBtn.onclick = () => modal.style.display = "block";
 if (closeSpan) closeSpan.onclick = () => modal.style.display = "none";
 window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
 
-document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', update);
+// Force la mise à jour pour TOUS les types d'entrées
+['input', 'change', 'keyup'].forEach(eventType => {
+    document.querySelectorAll('input').forEach(input => {
+        input.addEventListener(eventType, () => {
+            console.log("Changement détecté sur :", input.id, "Valeur :", input.value);
+            update();
+        });
+    });
 });
+
+window.onload = () => {
+    initChart();
+    update();
+};
 
 window.onload = () => {
     initChart();
