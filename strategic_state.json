@@ -1,11 +1,614 @@
-{
-    "last_update": "2026-02-06 10:27:12.579254",
+[
+  {
+    "last_update": "2026-02-06 10:56:04.458848",
     "active_variables": [
-        "S",
-        "I",
-        "R",
-        "Rep",
-        "Lobbying"
+      "S",
+      "I",
+      "R",
+      "Rep"
     ],
-    "python_logic": "\ndef deriv(y_dict, t, params):\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    Lobbying = y_dict.get('Lobbying', 0)\n    \n    S0, capacity = params.get('S0', 100), params.get('capacity', 40)\n    N, beta, gamma, sigma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1), params.get('sigma', 0.2)\n    \n    # --- DYNAMIQUE LOBBYING (Courbe en cloche) ---\n    # Alimentation modérée (0.05) et dépréciation forte (0.1) pour voir la redescente\n    inflow_lobby = 0.05 * (gamma * I)\n    outflow_lobby = 0.1 * Lobbying\n    dLobbyingdt = max(-Lobbying, inflow_lobby - outflow_lobby)\n    \n    # --- IMPACT AGGRESSIF ---\n    # Saturation rapide (K=5) pour un effet immédiat\n    influence = Lobbying / (Lobbying + 5)\n    \n    # Réduction de 90% du frein politique et protection de la réputation\n    sigma_lobby = sigma * (1 - 0.9 * influence)\n    rep_shield = 1 - (0.7 * influence) \n    \n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_total = min(sigma_lobby * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_total)\n    \n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = (-0.05 * beta * I * rep_shield) + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'Lobbying': dLobbyingdt}\n"
-}
+    "python_logic": "\ndef deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}\n"
+  },
+  {
+    "timestamp": "2026-02-06 11:01:10.049188",
+    "active_variables": [
+      "S",
+      "I",
+      "R",
+      "Rep"
+    ],
+    "python_logic": "\ndef deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}\n"
+  },
+  {
+    "timestamp": "2026-02-06 11:01:10.937855",
+    "active_variables": [
+      "S",
+      "I",
+      "R",
+      "Rep"
+    ],
+    "python_logic": "\ndef deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}\n"
+  },
+  {
+    "timestamp": "2026-02-06 11:05:17.527813",
+    "active_variables": [
+      "S",
+      "I",
+      "R",
+      "Rep"
+    ],
+    "python_logic": "\ndef deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}\n"
+  },
+  {
+    "timestamp": "2026-02-06 11:05:18.371549",
+    "active_variables": [
+      "S",
+      "I",
+      "R",
+      "Rep"
+    ],
+    "python_logic": "\ndef deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}\n"
+  },
+  {
+    "timestamp": "2026-02-06 11:05:40.788813",
+    "active_variables": [
+      "S",
+      "I",
+      "R",
+      "Rep",
+      "taxes"
+    ],
+    "python_logic": "def deriv(y_dict, t, params):\n    # --- Extraction des Stocks ---\n    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)\n    taxes = y_dict.get('taxes', 0)  # Extract taxes\n    \n    # --- Configuration Environnementale ---\n    S0 = params.get('S0', 100)\n    capacity = params.get('capacity', 40)\n    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)\n    \n    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---\n    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit\n    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)\n    \n    # --- LOGIQUE DE RÉPUTATION ---\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta * (1 - sigma_eff)\n    \n    # --- ALIMENTATION DE LA VARIABLE 'taxes' ---\n    inflow_taxes = 0.15 * (gamma * I)  # Use FLOW not STOCK\n    outflow_taxes = 0.05 * taxes\n    dTaxesdt = max(-taxes, inflow_taxes - outflow_taxes)\n    \n    # --- BAISSE DE L'EFFICACITÉ R&D ENFÂCHE PAR 'taxes' ---\n    gamma_eff *= (1 - 0.4 * taxes / (S0 + 1))\n    \n    # --- ÉQUATIONS DIFFÉRENTIELLES ---\n    dSdt = -(beta_eff * S * I) / N\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    dRdt = gamma_eff * I\n    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)\n    \n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'taxes': dTaxesdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:25:38.212526",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:27:54.228264",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:27:55.063167",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:30:20.347490",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        },
+        "Frictionadministrative": {
+          "initial": 0,
+          "description": "Administrative friction affecting R&D efficiency"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)",
+        "inflow_frictionadministrative": "0.1 * I",
+        "outflow_frictionadministrative": "0.08 * FrictionAdministrative"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        },
+        "Frictionadministrative": {
+          "formula": "max(-Frictionadministrative, inflow_frictionadministrative - outflow_frictionadministrative)",
+          "description": "Administrative friction affecting R&D efficiency"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n    Frictionadministrative = y_dict.get('Frictionadministrative', 0)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n    inflow_frictionadministrative = 0.1 * I\n    outflow_frictionadministrative = 0.08 * FrictionAdministrative\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n    # Administrative friction affecting R&D efficiency\n    dFrictionadministrativedt = max(-Frictionadministrative, inflow_frictionadministrative - outflow_frictionadministrative)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'Frictionadministrative': dFrictionadministrativedt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:31:04.309969",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:32:39.901712",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:32:40.732777",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:32:58.133242",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        },
+        "Friction_administrative": {
+          "initial": 0,
+          "description": "Administrative friction affecting R&D efficiency"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)",
+        "inflow_friction_administrative": "0.1 * I",
+        "outflow_friction_administrative": "0.08 * Friction_administrative"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        },
+        "Friction_administrative": {
+          "formula": "max(-Friction_administrative, inflow_friction_administrative - outflow_friction_administrative)",
+          "description": "Administrative friction affecting R&D efficiency"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n    Friction_administrative = y_dict.get('Friction_administrative', 0)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n    inflow_friction_administrative = 0.1 * I\n    outflow_friction_administrative = 0.08 * Friction_administrative\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n    # Administrative friction affecting R&D efficiency\n    dFriction_administrativedt = max(-Friction_administrative, inflow_friction_administrative - outflow_friction_administrative)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'Friction_administrative': dFriction_administrativedt}"
+  },
+  {
+    "timestamp": "2026-02-06 11:33:09.266873",
+    "model_state": {
+      "stocks": {
+        "S": {
+          "initial": 100,
+          "description": "Market potential"
+        },
+        "I": {
+          "initial": 1,
+          "description": "Operations"
+        },
+        "R": {
+          "initial": 0,
+          "description": "Revenue"
+        },
+        "Rep": {
+          "initial": 100,
+          "description": "Reputation"
+        }
+      },
+      "parameters": {
+        "S0": 100,
+        "beta": 0.4,
+        "gamma": 0.1,
+        "sigma": 0.2,
+        "capacity": 40
+      },
+      "intermediates": {
+        "N": "params.get('S0', 100) + 1",
+        "beta_param": "params.get('beta', 0.4)",
+        "gamma_param": "params.get('gamma', 0.1)",
+        "capacity": "params.get('capacity', 40)",
+        "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+        "reputation_drag": "2.0 if Rep < 50 else 1.0",
+        "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+        "beta_eff": "beta_param * (1 - sigma_eff)"
+      },
+      "derivatives": {
+        "S": {
+          "formula": "-(beta_eff * S * I) / N",
+          "description": "Market depletion"
+        },
+        "I": {
+          "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+          "description": "Operations flow"
+        },
+        "R": {
+          "formula": "gamma_eff * I",
+          "description": "Revenue accumulation"
+        },
+        "Rep": {
+          "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+          "description": "Reputation dynamics"
+        }
+      }
+    },
+    "generated_code": "def deriv(y_dict, t, params):\n    # --- Stock Extraction ---\n    S = y_dict.get('S', 100)\n    I = y_dict.get('I', 1)\n    R = y_dict.get('R', 0)\n    Rep = y_dict.get('Rep', 100)\n\n    # --- Intermediate Calculations ---\n    N = params.get('S0', 100) + 1\n    beta_param = params.get('beta', 0.4)\n    gamma_param = params.get('gamma', 0.1)\n    capacity = params.get('capacity', 40)\n    gamma_eff = gamma_param if I <= capacity else gamma_param * (capacity / I)\n    reputation_drag = 2.0 if Rep < 50 else 1.0\n    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)\n    beta_eff = beta_param * (1 - sigma_eff)\n\n    # --- Derivatives ---\n    # Market depletion\n    dSdt = -(beta_eff * S * I) / N\n    # Operations flow\n    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)\n    # Revenue accumulation\n    dRdt = gamma_eff * I\n    # Reputation dynamics\n    dRepdt = -0.05 * beta_param * I + 0.1 * (100 - Rep)\n\n    # --- Return ---\n    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}"
+  }
+]

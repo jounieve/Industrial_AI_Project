@@ -17,7 +17,7 @@ function initChart() {
         type: 'line',
         data: {
             labels: [],
-            datasets: []
+            datasets: [] 
         },
         options: {
             responsive: true,

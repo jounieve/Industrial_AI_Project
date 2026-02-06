@@ -6,197 +6,282 @@ from scipy.integrate import odeint
 class AeroDynEngine:
     def __init__(self):
         """
-        Initialise le moteur avec le modèle de base S-I-R étendu.
+        Initialize engine with JSON-based model representation.
+        Instead of storing Python code strings, we store structured JSON.
         """
-        self.baseline_code = """
-def deriv(y_dict, t, params):
-    # --- Extraction des Stocks ---
-    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)
-    
-    # --- Configuration Environnementale ---
-    S0 = params.get('S0', 100)
-    capacity = params.get('capacity', 40)
-    N, beta, gamma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1)
-    
-    # --- LOGIQUE DE CAPACITÉ INDUSTRIELLE ---
-    # Si l'intégration (I) dépasse la capacité, le passage vers les revenus (R) ralentit
-    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)
-    
-    # --- LOGIQUE DE RÉPUTATION ---
-    reputation_drag = 2.0 if Rep < 50 else 1.0
-    sigma_eff = min(params.get('sigma', 0.2) * reputation_drag, 0.95)
-    beta_eff = beta * (1 - sigma_eff)
-    
-    # --- ÉQUATIONS DIFFÉRENTIELLES ---
-    dSdt = -(beta_eff * S * I) / N
-    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)
-    dRdt = gamma_eff * I
-    dRepdt = -0.05 * beta * I + 0.1 * (100 - Rep)
-    
-    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt}
-"""
-        self.formula_code = self.baseline_code
-        self.default_state = {'S': 100, 'I': 1, 'R': 0, 'Rep': 100}
+        self.model_state = {
+            "stocks": {
+                "S": {"initial": 100, "description": "Market potential"},
+                "I": {"initial": 1, "description": "Operations"},
+                "R": {"initial": 0, "description": "Revenue"},
+                "Rep": {"initial": 100, "description": "Reputation"}
+            },
+            "parameters": {
+                "S0": 100,
+                "beta": 0.4,
+                "gamma": 0.1,
+                "sigma": 0.2,
+                "capacity": 40
+            },
+            "intermediates": {
+                "N": "params.get('S0', 100) + 1",
+                "beta_param": "params.get('beta', 0.4)",
+                "gamma_param": "params.get('gamma', 0.1)",
+                "capacity": "params.get('capacity', 40)",
+                "gamma_eff": "gamma_param if I <= capacity else gamma_param * (capacity / I)",
+                "reputation_drag": "2.0 if Rep < 50 else 1.0",
+                "sigma_eff": "min(params.get('sigma', 0.2) * reputation_drag, 0.95)",
+                "beta_eff": "beta_param * (1 - sigma_eff)"
+            },
+            "derivatives": {
+                "S": {
+                    "formula": "-(beta_eff * S * I) / N",
+                    "description": "Market depletion"
+                },
+                "I": {
+                    "formula": "(beta_eff * S * I) / N - (gamma_eff * I)",
+                    "description": "Operations flow"
+                },
+                "R": {
+                    "formula": "gamma_eff * I",
+                    "description": "Revenue accumulation"
+                },
+                "Rep": {
+                    "formula": "-0.05 * beta_param * I + 0.1 * (100 - Rep)",
+                    "description": "Reputation dynamics"
+                }
+            }
+        }
+        
+        self.baseline_state = json.loads(json.dumps(self.model_state))  # Deep copy
+        self._generate_code()
+        self.save_state_to_json()
+
+    def _generate_code(self):
+        """
+        Automatically generate Python code from JSON state.
+        This eliminates LLM from code generation - it's purely mechanical.
+        """
+        code_lines = ["def deriv(y_dict, t, params):"]
+        
+        # 1. Extract all stocks
+        code_lines.append("    # --- Stock Extraction ---")
+        for stock_name, stock_data in self.model_state["stocks"].items():
+            initial = stock_data["initial"]
+            code_lines.append(f"    {stock_name} = y_dict.get('{stock_name}', {initial})")
+        code_lines.append("")
+        
+        # 2. Calculate intermediates
+        code_lines.append("    # --- Intermediate Calculations ---")
+        for var_name, formula in self.model_state["intermediates"].items():
+            code_lines.append(f"    {var_name} = {formula}")
+        code_lines.append("")
+        
+        # 3. Calculate derivatives
+        code_lines.append("    # --- Derivatives ---")
+        for stock_name, deriv_data in self.model_state["derivatives"].items():
+            formula = deriv_data["formula"]
+            desc = deriv_data.get("description", "")
+            if desc:
+                code_lines.append(f"    # {desc}")
+            code_lines.append(f"    d{stock_name}dt = {formula}")
+        code_lines.append("")
+        
+        # 4. Return dictionary
+        code_lines.append("    # --- Return ---")
+        return_items = [f"'{stock}': d{stock}dt" for stock in self.model_state["stocks"].keys()]
+        code_lines.append(f"    return {{{', '.join(return_items)}}}")
+        
+        self.formula_code = '\n'.join(code_lines)
         self._compile()
-        self.save_state_to_json() # Persistance initiale à la création
 
     def _compile(self):
-        """Compile la chaîne de caractères Python en fonction exécutable."""
+        """Compile the generated code into executable function."""
         local_ns = {}
         exec(self.formula_code, globals(), local_ns)
         self.deriv_func = local_ns['deriv']
 
-    def save_state_to_json(self):
+    def add_stock(self, stock_name, initial_value=0, description="", inflow=None, outflow=None, custom_derivative=None):
         """
-        Crée un registre permanent (JSON) de l'état du système et de son code.
-        Visible par l'utilisateur/professeur pour prouver la modification du 'DNA'.
+        Add a new stock to the model using diff-based approach.
+        
+        Args:
+            stock_name: Name of the stock (e.g., 'Lobbying')
+            initial_value: Initial value (default 0)
+            description: Human-readable description
+            inflow: Expression for inflow (e.g., '0.1 * (gamma_param * I)')
+            outflow: Expression for outflow (e.g., '0.05 * Lobbying')
+            custom_derivative: Full derivative formula if not using inflow-outflow pattern
         """
-        state_payload = {
-            "last_update": str(datetime.datetime.now()),
-            "active_variables": list(self.default_state.keys()),
-            "python_logic": self.formula_code
+        print(f"[ENGINE] Adding stock: {stock_name}")
+        
+        # 1. Add to stocks
+        self.model_state["stocks"][stock_name] = {
+            "initial": initial_value,
+            "description": description
         }
-        with open('strategic_state.json', 'w', encoding='utf-8') as f:
-            json.dump(state_payload, f, indent=4, ensure_ascii=False)
-        print("[DATABASE] State persisted to strategic_state.json")
+        
+        # 2. Add intermediate calculations if using inflow-outflow
+        if inflow and outflow:
+            self.model_state["intermediates"][f"inflow_{stock_name.lower()}"] = inflow
+            self.model_state["intermediates"][f"outflow_{stock_name.lower()}"] = outflow
+            
+            # 3. Add derivative with positivity guard
+            derivative_formula = f"max(-{stock_name}, inflow_{stock_name.lower()} - outflow_{stock_name.lower()})"
+        elif custom_derivative:
+            derivative_formula = custom_derivative
+        else:
+            raise ValueError("Must provide either (inflow, outflow) or custom_derivative")
+        
+        self.model_state["derivatives"][stock_name] = {
+            "formula": derivative_formula,
+            "description": description
+        }
+        
+        # 4. Regenerate code from updated JSON
+        self._generate_code()
+        self.save_state_to_json()
+        
+        return True
 
-    def validate_logic(self, code_to_test):
+    def remove_stock(self, stock_name):
         """
-        Stress-test du code généré par l'IA :
-        1. Vérifie la syntaxe.
-        2. Découvre dynamiquement les nouvelles variables.
-        3. Détecte les explosions numériques ou dérives négatives.
+        Remove a stock from the model.
+        """
+        print(f"[ENGINE] Removing stock: {stock_name}")
+        
+        # Remove from stocks
+        if stock_name in self.model_state["stocks"]:
+            del self.model_state["stocks"][stock_name]
+        
+        # Remove derivative
+        if stock_name in self.model_state["derivatives"]:
+            del self.model_state["derivatives"][stock_name]
+        
+        # Remove related intermediates
+        inflow_key = f"inflow_{stock_name.lower()}"
+        outflow_key = f"outflow_{stock_name.lower()}"
+        if inflow_key in self.model_state["intermediates"]:
+            del self.model_state["intermediates"][inflow_key]
+        if outflow_key in self.model_state["intermediates"]:
+            del self.model_state["intermediates"][outflow_key]
+        
+        # Regenerate code
+        self._generate_code()
+        self.save_state_to_json()
+        
+        return True
+
+    def modify_intermediate(self, var_name, new_formula):
+        """Modify an intermediate calculation."""
+        print(f"[ENGINE] Modifying intermediate: {var_name}")
+        self.model_state["intermediates"][var_name] = new_formula
+        self._generate_code()
+        self.save_state_to_json()
+
+    def modify_derivative(self, stock_name, new_formula):
+        """Modify a derivative formula."""
+        print(f"[ENGINE] Modifying derivative for: {stock_name}")
+        if stock_name in self.model_state["derivatives"]:
+            self.model_state["derivatives"][stock_name]["formula"] = new_formula
+            self._generate_code()
+            self.save_state_to_json()
+
+    def get_current_state(self):
+        """Return the current model state as JSON."""
+        return json.dumps(self.model_state, indent=2)
+
+    def validate_logic(self):
+        """
+        Test the current model for stability.
+        Since code generation is mechanical, we only need to test physics.
         """
         try:
-            local_ns = {}
-            clean_code = code_to_test.replace('\r\n', '\n').strip()
-            exec(clean_code, globals(), local_ns)
-            test_func = local_ns['deriv']
+            # Get initial values
+            stocks = list(self.model_state["stocks"].keys())
+            y0 = [self.model_state["stocks"][s]["initial"] for s in stocks]
             
-            # Phase 1 : Découverte des clés (Stocks)
-            dummy_y = {k: 1.0 for k in self.default_state}
-            sample_output = test_func(dummy_y, 0, {'S0':100, 'beta':0.5, 'gamma':0.1})
-            all_keys = list(sample_output.keys()) 
-            
-            # Phase 2 : Simulation test
-            y0 = [self.default_state.get(k, 0.0) if k in self.default_state else 0.0 for k in all_keys]
             def wrapper(y, t):
-                d = test_func(dict(zip(all_keys, y)), t, {'S0':100, 'beta':1.5, 'gamma':0.1})
-                return [d.get(k, 0) for k in all_keys]
-
+                y_dict = dict(zip(stocks, y))
+                params = self.model_state["parameters"]
+                d = self.deriv_func(y_dict, t, params)
+                return [d.get(k, 0) for k in stocks]
+            
+            # Test simulation
             t_test = np.linspace(0, 40, 50)
             sol = odeint(wrapper, y0, t_test)
             
-            # Phase 3 : Critères de rejet
-            if np.any(np.abs(sol) > 5000): 
-                return False, "Explosion numérique détectée (Boucle positive sans limite)."
-            if np.any(sol < -0.1): 
-                return False, "Valeur négative détectée (Dérive instable)."
-                
-            return True, all_keys 
-        except Exception as e:
-            return False, f"Erreur de Syntaxe Python : {str(e)}"
-
-    def update_logic(self, new_code):
-        """Met à jour le moteur si le code passe les tests de sécurité."""
-        is_valid, result = self.validate_logic(new_code)
-        if not is_valid: 
-            return False, result
+            # Check for explosions or negative values
+            if np.any(np.abs(sol) > 5000):
+                return False, "Explosion détectée (valeurs > 5000)"
+            if np.any(sol < -0.1):
+                return False, "Valeurs négatives détectées"
             
-        # Synchronisation de la mémoire (ajout des nouveaux stocks)
-        for k in result:
-            if k not in self.default_state:
-                print(f"[ENGINE] New variable discovered: {k}")
-                self.default_state[k] = 0.0
-                
-        self.formula_code = new_code
-        self._compile() 
-        self.save_state_to_json() # Sauvegarde automatique après modification
-        return True, None
+            return True, "Stable"
+            
+        except Exception as e:
+            return False, f"Erreur: {str(e)}"
 
     def reset_to_baseline(self):
-        """Restaure l'état d'origine S-I-R-Rep."""
-        self.default_state = {'S': 100, 'I': 1, 'R': 0, 'Rep': 100}
-        self.formula_code = self.baseline_code
-        self._compile()
+        """Reset to original baseline model."""
+        print("[ENGINE] Resetting to baseline...")
+        self.model_state = json.loads(json.dumps(self.baseline_state))
+        self._generate_code()
         self.save_state_to_json()
 
+    def save_state_to_json(self):
+        """Save the current model state as JSON history."""
+        new_entry = {
+            "timestamp": str(datetime.datetime.now()),
+            "model_state": self.model_state,
+            "generated_code": self.formula_code
+        }
+        
+        history = []
+        try:
+            with open('strategic_state.json', 'r', encoding='utf-8') as f:
+                history = json.load(f)
+                if not isinstance(history, list):
+                    history = [history]
+        except (FileNotFoundError, json.JSONDecodeError):
+            history = []
+        
+        history.append(new_entry)
+        
+        with open('strategic_state.json', 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+        
+        print(f"[DATABASE] Version {len(history)} saved")
+
     def run(self, params):
-        """Exécute la simulation complète."""
+        """Execute simulation."""
         t = np.linspace(0, 160, 200)
-        keys = list(self.default_state.keys())
-        y0 = [self.default_state[k] for k in keys]
+        stocks = list(self.model_state["stocks"].keys())
+        y0 = [self.model_state["stocks"][s]["initial"] for s in stocks]
         
         def safe_wrapper(y, t, p, ks):
             y_dict = dict(zip(ks, y))
-            # Utilise un dictionnaire sécurisé pour éviter les KeyErrors
+            
             class SafeParams(dict):
-                def __getitem__(self, k): return self.get(k, 0.0)
+                def __getitem__(self, k):
+                    return self.get(k, 0.0)
+            
             res = self.deriv_func(y_dict, t, SafeParams(p))
             return [res.get(k, 0) for k in ks]
-
-        sol = odeint(safe_wrapper, y0, t, args=(params, keys))
         
-        # Écrêtage pour éviter les erreurs graphiques
+        sol = odeint(safe_wrapper, y0, t, args=(params, stocks))
+        
+        # Clip to prevent graph errors
         limit = params.get('S0', 100) * 2
-        sol = np.clip(sol, -limit, limit) 
+        sol = np.clip(sol, -limit, limit)
         
         results = {'t': t.tolist(), 'formula': self.formula_code}
-        for i, key in enumerate(keys):
-            results[key.lower()] = sol[:, i].tolist()
+        for i, stock in enumerate(stocks):
+            results[stock.lower()] = sol[:, i].tolist()
+        
         return results
-    
-    def remove_variable(self, var_name):
-        """Supprime proprement une variable du dictionnaire d'état."""
-        if var_name in self.default_state:
-            del self.default_state[var_name]
-            print(f"[ENGINE] Removed variable '{var_name}' from state")
-            self.save_state_to_json()
-            return True
-        return False
 
-    def set_lobbying_scenario(self):
-        """
-        Injecte manuellement le scénario de démonstration Lobbying.
-        Utilisé pour garantir une stabilité totale pendant l'oral.
-        """
-        lobbying_code = """
-def deriv(y_dict, t, params):
-    S, I, R, Rep = y_dict.get('S', 100), y_dict.get('I', 1), y_dict.get('R', 0), y_dict.get('Rep', 100)
-    Lobbying = y_dict.get('Lobbying', 0)
-    
-    S0, capacity = params.get('S0', 100), params.get('capacity', 40)
-    N, beta, gamma, sigma = S0 + 1, params.get('beta', 0.4), params.get('gamma', 0.1), params.get('sigma', 0.2)
-    
-    # --- DYNAMIQUE LOBBYING (Courbe en cloche) ---
-    # Alimentation modérée (0.05) et dépréciation forte (0.1) pour voir la redescente
-    inflow_lobby = 0.05 * (gamma * I)
-    outflow_lobby = 0.1 * Lobbying
-    dLobbyingdt = max(-Lobbying, inflow_lobby - outflow_lobby)
-    
-    # --- IMPACT AGGRESSIF ---
-    # Saturation rapide (K=5) pour un effet immédiat
-    influence = Lobbying / (Lobbying + 5)
-    
-    # Réduction de 90% du frein politique et protection de la réputation
-    sigma_lobby = sigma * (1 - 0.9 * influence)
-    rep_shield = 1 - (0.7 * influence) 
-    
-    gamma_eff = gamma if I <= capacity else gamma * (capacity / I)
-    reputation_drag = 2.0 if Rep < 50 else 1.0
-    sigma_total = min(sigma_lobby * reputation_drag, 0.95)
-    beta_eff = beta * (1 - sigma_total)
-    
-    dSdt = -(beta_eff * S * I) / N
-    dIdt = (beta_eff * S * I) / N - (gamma_eff * I)
-    dRdt = gamma_eff * I
-    dRepdt = (-0.05 * beta * I * rep_shield) + 0.1 * (100 - Rep)
-    
-    return {'S': dSdt, 'I': dIdt, 'R': dRdt, 'Rep': dRepdt, 'Lobbying': dLobbyingdt}
-"""
-        self.default_state['Lobbying'] = 0.0
-        self.formula_code = lobbying_code
-        self._compile()
-        self.save_state_to_json()
-        print("[DEMO] Lobbying scenario activated and saved to JSON.")
-        return True
+    @property
+    def default_state(self):
+        """Compatibility property for old code."""
+        return {k: v["initial"] for k, v in self.model_state["stocks"].items()}

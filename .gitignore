@@ -2,7 +2,4 @@ venv/
 .venv/
 env/
 __pycache__/
-
-
-
-
+strategic_state.json
